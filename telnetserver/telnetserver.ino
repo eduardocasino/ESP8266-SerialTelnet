@@ -24,15 +24,15 @@ int RESET_PIN = 0; // = GPIO0 on nodeMCU
 void setup()
 {
   Serial.begin(BAUD_RATE, SERIAL_8N1);
-	Serial.setRxBufferSize(1024); // requires ESP8266 >= 2.4.0 https://github.com/esp8266/Arduino/releases/tag/2.4.0-rc1
+  Serial.setRxBufferSize(1024); // requires ESP8266 >= 2.4.0 https://github.com/esp8266/Arduino/releases/tag/2.4.0-rc1
 
   delay(5000); // BOOT WAIT
   pinMode(RESET_PIN, INPUT_PULLUP);
   wifiManager.setHostname("KIM1");
   wifiManager.autoConnect("KIM1");
 
-	server.begin();
-	server.setNoDelay(true);
+  server.begin();
+  server.setNoDelay(true);
 
   httpUpdater.setup(&httpServer, update_path, update_username, update_password);
   httpServer.begin();
@@ -42,19 +42,19 @@ void setup()
 
 void loop()
 {
-	if (server.hasClient())
-		AcceptConnection();
-	else if (serverClient && serverClient.connected())
-		ManageConnected();
-	
-	httpServer.handleClient();
+  if (server.hasClient())
+    AcceptConnection();
+  else if (serverClient && serverClient.connected())
+    ManageConnected();
+  
+  httpServer.handleClient();
 }
 
 void AcceptConnection()
 {
-	if (serverClient && serverClient.connected()) 
-		serverClient.stop();
-	serverClient = server.available();
+  if (serverClient && serverClient.connected()) 
+    serverClient.stop();
+  serverClient = server.available();
   // IAC WILL SUPPRESS-GO-AHEAD
   serverClient.write(255);
   serverClient.write(253);
@@ -63,24 +63,24 @@ void AcceptConnection()
   serverClient.write(255);
   serverClient.write(251);
   serverClient.write(1);
-	serverClient.write("Connected\n");
+  serverClient.write("Connected\n");
 }
 
 void ManageConnected()
 {
   size_t rxlen = serverClient.available();
   if (rxlen > 0)
-	{
-		char sbuf[rxlen];
-		serverClient.read(sbuf, rxlen);
+  {
+    uint8_t sbuf[rxlen];
+    serverClient.readBytes(sbuf, rxlen);
     Serial.write(sbuf, rxlen);
-	}
+  }
   
   size_t txlen = Serial.available();
   if (txlen > 0)
-	{
-		char sbuf[txlen];
-		Serial.read(sbuf, txlen);
+  {
+    uint8_t sbuf[txlen];
+    Serial.readBytes(sbuf, txlen);
     serverClient.write(sbuf, txlen);
-	}
+  }
 }
